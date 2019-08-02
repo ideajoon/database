@@ -1,0 +1,23 @@
+
+<SUBSTR 문자열 자르기>
+
+ORACLE 내장함수에는  LEFT(), RIGHT() 함수가 없다.
+substr 함수를 통해 똑같이 구현이 가능하다.
+
+@ 3번째 자리부터 쭉-
+SELECT substr('ABC홍길XY', 3) FROM DUAL;
+C홍길동XY
+
+@ 4번째 자리부터 2글자
+SELECT substr('ABC홍길동XY', 4, 2) FROM DUAL;
+홍길
+
+SELECT substr('일이삼사오육칠팔구', 5, 3) FROM DUAL;
+오육칠
+
+@ 우측부터 추출하고 싶다면 마이너스(-) 기호를 사용하면 된다. 우측 3글자
+SELECT substr('12345678', -3) FROM DUAL;
+678
+
+
+출처: https://pangate.com/675 [호주 멜번스토리]
