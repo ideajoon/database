@@ -1,0 +1,69 @@
+쿼리가 처리되는 과정은 다음과 같다.
+
+ 
+1. 구문 분석(Parsing)
+해당 쿼리가 문법적으로 틀리지 않은지 확인. 해당 구문을 SQL 서버가 이해할 수 있는 단위들로 분해하는 과정.
+만약 구문이 부정확하다면 여기서 처리를 중단. 이 문장이 일괄 처리(batch) 내에 있다면 일괄 처리 전체를 중단.
+(Batch abort : Batch 중 하나라도 syntax error가 있다면 전체 batch가 실행되지 않는다.)
+
+2. 표준화(Standardization)
+실제로 필요없는 부분들이 제거. 표준화된 쿼리 트리(Standard Query Tree)가 만들어 진다.
+
+
+3. 최적화(Optimization)
+통계나 조각 정보 등을 바탕으로 실행 계획을 만들어 낸다. 쿼리처리에서 매우 중요한 단계
+① 쿼리 분석 : 검색 제한자(SARG)인지 조인 조건인지 판단.
+② 인덱스 선택 : 분포 통계 정보를 이용하여 인덱스검색이나 테이블 스캔 중의 하나를 선택. 여러 인덱스 중 가장 효율적인 인덱스를 선택
+③ 조인 처리 : JOIN, UNION, GROUP BY, ORDER BY 절을 가지고 있는지 확인하여 적절한 작업 순서를 선택
+이 단계의 출력은 실행 계획(Execution Plan) 이다.
+
+4. 컴파일(Compilation)
+컴파일을 하면 이진 코드가 생성된다. 일반적인 경우에는 컴파일하고 나면 .exe, .dll 등의 이진 파일이 만들어 지는데, SQL Server에서는 그냥 메모리(프로시저 캐시)에만 올린다. 그래서 컴파일 속도가 매우 빠르다.
+
+5. 실행(Execute)
+엑세스 루틴으로 가서 실제 처리를 하고 결과를 돌려준다.
+이상의 다섯 단계는 단순화한 논리적 절차로 받아들여야 하며, 실제 쿼리 과정은 이보다 훨씬 더 복잡하다.
+
+  
+SELECT 실행 순서 
+
+-문법 순서-
+
+SELECT                          - 1
+FROM                            - 2
+WHERE                           - 3
+GROUP BY                        - 4
+HAVING                          - 5
+ORDER BY                        - 6
+
+ 
+-실행 순서-
+
+FROM                            - 1
+WHERE                           - 2
+GROUP BY                        - 3
+HAVING                          - 4
+SELECT                          - 5
+ORDER BY                        - 6
+
+  
+
+해당 데이터가 있는 곳을 찾아가서              (FROM)
+조건에 맞는 데이터만 가져와서                 (WHERE)
+원하는 데이터로 가공                          (GROUP BY)
+가공한 데이터에서 조건에 맞는 것만             (HAVING)
+뽑아내서                                     (SELECT)
+정렬                                        (ORDER BY)
+
+
+실행순서는 문법, 권한 검사 순서이기도 하고,
+Alias 등록 순서 이기도 하다.
+
+별칭(Alias)
+FROM 절에서 테이블에 Alias를 사용했다면       (FROM Table1 AS T1)
+SELECT, ORDER BY 절에서 사용할 수 있고       (SELECT T1.Col1, ORDER BY T1.Col1)
+SELECT 절에서 컬럼에 Alias를 사용했다면       (SELECT T1.Col1 AS a)
+ORDER BY 절에서 사용할 수 있다.               (ORDER BY AS a)
+
+
+[출처] SELECT 실행 순서 | 작성자 연향지
