@@ -1,23 +1,112 @@
 
 <SUBSTR 문자열 자르기>
-
 ORACLE 내장함수에는  LEFT(), RIGHT() 함수가 없다.
-substr 함수를 통해 똑같이 구현이 가능하다.
 
-@ 3번째 자리부터 쭉-
 SELECT substr('ABC홍길XY', 3) FROM DUAL;
 C홍길동XY
 
-@ 4번째 자리부터 2글자
 SELECT substr('ABC홍길동XY', 4, 2) FROM DUAL;
 홍길
 
-SELECT substr('일이삼사오육칠팔구', 5, 3) FROM DUAL;
-오육칠
-
-@ 우측부터 추출하고 싶다면 마이너스(-) 기호를 사용하면 된다. 우측 3글자
 SELECT substr('12345678', -3) FROM DUAL;
 678
 
-
 출처: https://pangate.com/675 [호주 멜번스토리]
+
+
+
+<오라클 OVER() 함수>
+OVER함수는 ORDER BY, GROUP BY 서브쿼리를 개선하기 위해 나온 함수라고 할 수 있다.
+
+1. 전통 SQL 사용
+SELECT YYMM, PRICE
+  FROM (SELECT YYMM,
+                SUM(TOT_PRICE) AS PRICE
+          FROM TABLE1
+          GROUP BY YYMM
+          ORDER BY YYMM DESC)
+          
+2. OVER 함수를 사용
+SELECT YYMM, SUM(TOT_PRICE) OVER(ORDER BY YYMM DESC) AS PRICE
+  FROM TABLE1
+  
+  
+3. RANK() OVER() 함수
+값의 그룹에서 값의 순위를 계산합니다.
+
+SELECT T.TEAM_CD, T.SCORE, RANK() OVER(ORDER BY SCORE DESC) RANK, T.PLAY_DATE
+  FROM TMP_TABLE T
+  
+결과
+TEAM_CD SCORE RANK PALY_DATE
+------------------------------
+BBB 100 1 2010/08/04
+BBB 95 2 2010/08/03
+AAA 90 3 2010/08/01
+BBB 90 3 2010/08/02
+AAA 60 5 2010/08/03
+AAA 50 6 2010/08/02
+AAA 50 6 2010/08/04
+BBB 50 6 2010/08/01
+
+
+4. DENSE_RANK() OVER() 함수
+값의 그룹에서 값의 순위를 계산합니다. RANK와는 달리 같은 순위가 둘 이상 있어도 다음 순위는 1만 증가하여 반환.
+
+SELECT T.TEAM_CD, T.SCORE, DENSE_RANK() OVER(ORDER BY SCORE DESC) RANK, T.PLAY_DATE
+  FROM TMP_TABLE T
+
+결과
+TEAM_CD SCORE RANK PALY_DATE
+------------------------------
+BBB 100 1 2010/08/04
+BBB 95 2 2010/08/03
+AAA 90 3 2010/08/01
+BBB 90 3 2010/08/02
+AAA 60 4 2010/08/03
+AAA 50 5 2010/08/02
+AAA 50 5 2010/08/04
+BBB 50 5 2010/08/01
+
+
+5. ROW_NUMBER() OVER() 함수
+특정 컬럼 기준으로 순위정하기(행번호 부여하기)
+
+SELECT T.TEAM_CD, T.SCORE, ROW_NUMBER() OVER(ORDER BY SCORE DESC) RANK, T.PLAY_DATE
+  FROM TMP_TABLE T
+
+결과
+TEAM_CD SCORE RANK PALY_DATE
+------------------------------
+BBB 100 1 2010/08/04
+BBB 95 2 2010/08/03
+AAA 90 3 2010/08/01
+BBB 90 4 2010/08/02
+AAA 60 5 2010/08/03
+AAA 50 6 2010/08/02
+AAA 50 7 2010/08/04
+BBB 50 8 2010/08/01
+  
+  
+6. 그 이외 OVER 함수 예시
+COUNT(*)OVER() : 전체행 카운트
+COUNT(*)OVER(PARTITION BY 컬럼) : 그룹단위로 나누어 카운트
+
+MAX(컬럼)OVER() : 전체행 중에 최고값
+MAX(컬럼)OVER(PARTITION BY 컬럼) : 그룹내 최고값
+
+MIN(컬럼)OVER() : 전체행 중에 최소값
+MIN(컬럼)OVER(PARTITION BY 컬럼) : 그룹내 최소값
+
+SUM(컬럼)OVER() : 전체행 합
+SUM(컬럼)OVER(PARTITION BY 컬럼) : 그룹내 합
+
+AVG(컬럼)OVER() : 전체행 평균
+AVG(컬럼)OVER(PARTITION BY 컬럼) : 그룹내 평균
+
+STDDEV(컬럼)OVER() : 전체행 표준편차
+STDDEV(컬럼)OVER(PARTITION BY 컬럼) : 그룹내 표준편차
+
+RATIO_TO_REPORT(컬럼)OVER() : 현재행값/SUM(전체행값) 퍼센테이지로 나타낼경우 100곱하면 됩니다.
+RATIO_TO_REPORT(컬럼)OVER(PARTITION BY 컬럼) : 현재행값 / SUM(그룹행값) 퍼센테이지로 나타낼경우 100곱하면 됩니다.
+
